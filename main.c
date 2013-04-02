@@ -8,18 +8,23 @@ struct coord_t {
 
 struct coord_t inputSize(FILE *liveIn);
 int **inputField(FILE *liveIn, struct coord_t size);
-void generate(int **field, int genNum, struct coord_t size);
+void generate(int **field, int **bufferField, int genNum, struct coord_t size);
 int check(int **field, struct coord_t size, int i, int j);
 
 int main(int argc, char **argv)
 {
-    int **field, genNum = 1000;
+    int **field, **bufferField, i, genNum = 1000;
     struct coord_t size;
     FILE *liveIn;
     liveIn = fopen("life.in", "r");
     size = inputSize(liveIn);
     field = inputField(liveIn, size);
-    generate(field, genNum, size);
+
+    bufferField = (int **) calloc(size.x, sizeof(int *));
+    for (i = 0; i < size.x; i++) {
+        bufferField[i] = (int *) calloc(size.y, sizeof(int));
+    }
+    generate(field, bufferField, genNum, size);
     return 0;
 }
 
@@ -49,40 +54,29 @@ int **inputField(FILE *liveIn, struct coord_t size)
     return field;
 }
 
-void generate(int **field, int genNum, struct coord_t size)
+void generate(int **field, int **bufferField, int genNum, struct coord_t size)
 {
-    int **nextField, i, j, gen;
-    nextField = (int **) calloc(size.x, sizeof(int *));
+    int i, j;
+    static int gen = 0;
+    if (gen++ == genNum) {
+        return;
+    }
+    printf("=== %d ===\n", gen);
     for (i = 0; i < size.x; i++) {
-        nextField[i] = (int *) calloc(size.y, sizeof(int));
+        for (j = 0; j < size.y; j++) {
+            bufferField[i][j] = check(field, size, i, j);
+            if (bufferField[i][j]) printf(" *");
+            else printf("  ");
+        }
+        printf("|\n");
     }
-    for (gen = 0; gen < genNum; gen++) {
-        usleep(50000);
-        system("clear");
-        printf("=== %d ===\n", gen + 1);
-        for (i = 0; i < size.x; i++) {
-            for (j = 0; j < size.y; j++) {
-                nextField[i][j] = check(field, size, i, j);
-                if (nextField[i][j]) printf(" *");
-                else printf("  ");
-            }
-            printf("|\n");
-        }
-        if (++gen > genNum) {
-            break;
-        }
-        usleep(50000);
-        system("clear");
-        printf("=== %d ===\n", gen + 1);
-        for (i = 0; i < size.x; i++) {
-            for (j = 0; j < size.y; j++) {
-                field[i][j] = check(nextField, size, i, j);
-                if (field[i][j]) printf(" *");
-                else printf("  ");
-            }
-            printf("|\n");
-        }
+    for (i = 0; i < size.y; i++) {
+        printf("——");
     }
+    printf("—\n");
+    usleep(50000);
+    system("clear");
+    generate(bufferField, field, genNum, size);
 }
 
 int check(int **field, struct coord_t size, int i, int j)
