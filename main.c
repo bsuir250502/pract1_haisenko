@@ -88,45 +88,6 @@ int fInputNumericalData(FILE *lifeInput)
     return number;
 }
 
-int **fInputField(FILE *lifeInput, coord_t size)
-{
-    int **field, i, j;
-    char temp = 0;
-    field = (int **) calloc(size.x, sizeof(int *));
-    for (i = 0; i < size.x; i++) {
-        field[i] = (int *) calloc(size.y, sizeof(int));
-    }
-    if (getc(lifeInput) != '\n') {
-        printf("Fill the field according to the rules.\n");
-        exit(1);
-    }
-    for (i = 0; i < size.x; i++) {
-        for (j = 0, temp = 0; j <= size.y && temp != '\n'; j++) {
-            temp = getc(lifeInput);
-            if (j == size.y) {
-                while (temp != '\n' && temp != EOF) {
-                    temp = getc(lifeInput);
-                }
-            }
-            switch (temp) {
-            case '0':
-                break;
-            case '1':
-                field[i][j] = 1;
-                break;
-            case '\n':
-                break;
-            case EOF:
-                return field;
-            default:
-                printf("'%c' is wrong cell.\n", temp);
-                exit(0);
-            }
-        }
-    }
-    return field;
-}
-
 void generate(int **field)
 {
     int i, j;
